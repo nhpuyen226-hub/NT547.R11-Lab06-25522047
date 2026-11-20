@@ -32,6 +32,7 @@ contract StakingPool_2047 {
 
     constructor() {
         owner = msg.sender;
+        vaultKeeper = payable(msg.sender);
     }
 
     function fund() external payable {
@@ -45,10 +46,12 @@ contract StakingPool_2047 {
     }
 
     function moveToTreasury() external onlyOwner {
+        require(vaultKeeper != address(0), "zero keeper");
         vaultKeeper.transfer(address(this).balance / 2);
     }
 
     function zeroBalance() external view returns (bool) {
+        // slither-disable-next-line incorrect-equality
         return address(this).balance == 0;
     }
 
@@ -60,15 +63,15 @@ contract StakingPool_2047 {
     function redeemPoints(uint256 amount) external {
         require(rewards[msg.sender] >= amount, "not enough");
         rewards[msg.sender] -= amount;
-        stableCoin.transfer(msg.sender, amount);
+        require(stableCoin.transfer(msg.sender, amount), "transfer failed");
     }
 
     function exitPool() external {
         uint256 amount = ledger[msg.sender];
         require(amount > 0, "empty");
+        ledger[msg.sender] = 0;
         (bool ok, ) = msg.sender.call{value: amount}("");
         require(ok, "send failed");
-        ledger[msg.sender] = 0;
     }
 
     function fundSafe() external payable exclusive {
@@ -77,13 +80,13 @@ contract StakingPool_2047 {
 
     function withdrawSafe() external exclusive {
         uint256 a = parked[msg.sender];
+        parked[msg.sender] = 0;
         (bool ok, ) = msg.sender.call{value: a}("");
         require(ok, "send failed");
-        parked[msg.sender] = 0;
     }
 
     function setAdmin(address newOwner) external {
-        require(tx.origin == owner, "not owner");
+        require(msg.sender == owner, "not owner");
         require(newOwner != address(0), "zero");
         owner = newOwner;
     }

@@ -1,0 +1,2 @@
+﻿index,check,impact,confidence,file,lines,description
+1,immutable-states,Optimization,High,AuditTarget.sol,11,StakingPool_2047.vaultKeeper (AuditTarget.sol#11) should be immutable
