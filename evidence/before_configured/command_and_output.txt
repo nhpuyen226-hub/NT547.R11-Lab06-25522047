@@ -1,0 +1,55 @@
+COMMAND: slither AuditTarget.sol --config-file slither.config.json --fail-none --json evidence/before_configured/slither.json
+SLITHER_VERSION:
+0.11.6
+
+SOLC_VERSION:
+solc, the solidity compiler commandline interface
+Version: 0.8.24+commit.e11b9ed9.Linux.g++
+
+
+Detector: reentrancy-eth
+Reentrancy in StakingPool_2047.exitPool() (AuditTarget.sol#66-72):
+	External calls:
+	- (ok,None) = msg.sender.call{value: amount}() (AuditTarget.sol#69)
+	State variables written after the call(s):
+	- ledger[msg.sender] = 0 (AuditTarget.sol#71)
+	StakingPool_2047.ledger (AuditTarget.sol#12) can be used in cross function reentrancies:
+	- StakingPool_2047.exitPool() (AuditTarget.sol#66-72)
+	- StakingPool_2047.fund() (AuditTarget.sol#37-40)
+	- StakingPool_2047.ledger (AuditTarget.sol#12)
+Reentrancy in StakingPool_2047.withdrawSafe() (AuditTarget.sol#78-83):
+	External calls:
+	- (ok,None) = msg.sender.call{value: a}() (AuditTarget.sol#80)
+	State variables written after the call(s):
+	- parked[msg.sender] = 0 (AuditTarget.sol#82)
+	StakingPool_2047.parked (AuditTarget.sol#17) can be used in cross function reentrancies:
+	- StakingPool_2047.fundSafe() (AuditTarget.sol#74-76)
+	- StakingPool_2047.parked (AuditTarget.sol#17)
+	- StakingPool_2047.withdrawSafe() (AuditTarget.sol#78-83)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-1
+
+Detector: unchecked-transfer
+StakingPool_2047.redeemPoints(uint256) (AuditTarget.sol#60-64) ignores return value by stableCoin.transfer(msg.sender,amount) (AuditTarget.sol#63)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unchecked-transfer
+
+Detector: uninitialized-state
+StakingPool_2047.vaultKeeper (AuditTarget.sol#13) is never initialized. It is used in:
+	- StakingPool_2047.moveToTreasury() (AuditTarget.sol#47-49)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#uninitialized-state-variables
+
+Detector: incorrect-equality
+StakingPool_2047.zeroBalance() (AuditTarget.sol#51-53) uses a dangerous strict equality:
+	- address(this).balance == 0 (AuditTarget.sol#52)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dangerous-strict-equalities
+
+Detector: tx-origin
+StakingPool_2047.setAdmin(address) (AuditTarget.sol#85-89) uses tx.origin for authorization: require(bool,string)(tx.origin == owner,not owner) (AuditTarget.sol#86)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dangerous-usage-of-txorigin
+
+Detector: constable-states
+StakingPool_2047.vaultKeeper (AuditTarget.sol#13) should be constant 
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#state-variables-that-could-be-declared-constant
+AuditTarget.sol analyzed (2 contracts with 64 detectors), 7 result(s) found
+Multiple frameworks detected: solc, Solc-json. Using solc (highest priority). Use --compile-force-framework to override.
+'solc --version' running
+'solc AuditTarget.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --allow-paths .,/mnt/d/UIT/Blockchain/Lab6/Lab06_SinhVien' running
